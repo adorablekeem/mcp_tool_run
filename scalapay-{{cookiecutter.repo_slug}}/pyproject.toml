@@ -1,0 +1,101 @@
+[tool.poetry]
+name = "{{cookiecutter.project_slug}}"
+version = "0.0.0"
+description = ""
+authors = ["{{cookiecutter.full_name}} <{{cookiecutter.email}}>"]
+readme = "README.md"
+packages = [
+    { include = "scalapay/{{cookiecutter.project_slug}}" },
+    { include = "{{cookiecutter.module_name}}.py" },
+]
+
+[tool.poetry.dependencies]
+python = "^{{ cookiecutter.runtime.split('python')[-1] }}"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+commitizen = "^3.6.0"
+flake8 = "^6.1.0"
+isort = "^5.12.0"
+mypy = "^1.8.0"
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+flake8-eradicate = "^1.5.0"
+flake8-pytest-style = "^1.7.2"
+pep8-naming = "^0.13.3"
+flake8-bugbear = "^24.2.6"
+flake8-annotations = "^3.0.1"
+flake8-simplify = "^0.21.0"
+flake8-print = "^5.0.0"
+bandit = {extras = ["toml"], version = "^1.7.7"}
+moto = {extras = ["all"], version = "^5.0.11"}
+boto3 = "^1.35.76"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.0.0"
+version_scheme = "semver"
+tag_format = "$version"
+update_changelog_on_bump = true
+major_version_zero = true
+bump_message = "bump: version $current_version → $new_version"
+version_files = ["pyproject.toml:version"]
+
+[tool.black]
+line-length = 120
+target-version = ['py312']
+include = '\.pyi?$'
+exclude = '''
+^/(
+  (
+    \.eggs
+    | .venv
+    | \.git
+    | build
+    | dist
+    | notebooks
+  )
+)
+'''
+
+[tool.isort]
+line_length = 120
+profile = "black"
+src_paths = ["scalapay/{{cookiecutter.project_slug}}", "tests"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = ["--cov=scalapay", "--cov-report=term-missing", "--cov-branch"]
+testpaths = ["tests"]
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+
+[tool.coverage.report]
+exclude_also = [
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    ]
+
+[tool.mypy]
+files = "scalapay/{{cookiecutter.project_slug}}/**/*.py"
+python_version = "3.12"
+follow_imports = "normal"
+strict_optional = "False"
+warn_redundant_casts = "True"
+warn_unused_ignores = "True"
+disallow_any_generics = "False"
+check_untyped_defs = "True"
+no_implicit_reexport = "True"
+no_implicit_optional = "True"
+disallow_untyped_defs = "False"
+ignore_missing_imports = "False"
+namespace_packages = "True"
+disallow_any_unimported = "True"
+exclude = []
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "dist"]
+targets = "scalapay"

@@ -1,0 +1,121 @@
+steps:
+  - name: ":python: Running tests :pytest:"
+    command: pytest
+    plugins:
+      - docker-compose#v5.2.0:
+          run: app
+          config:
+            - docker-compose.yml
+    agents:
+      queue: sp-art-tests
+
+  - name: ":python: Running linting :lint-roller:"
+    command: "flake8"
+    plugins:
+      - docker-compose#v5.2.0:
+          run: app
+          config:
+            - docker-compose.yml
+    agents:
+      queue: sp-art-tests
+
+  - name: ":python: Running formatter and import sort checks :python-black: :isort:"
+    command: "black . --check && isort . --check"
+    plugins:
+      - docker-compose#v5.2.0:
+          run: app
+          config:
+            - docker-compose.yml
+    agents:
+      queue: sp-art-tests
+
+  - name: ":python: Running mypy :mypy:"
+    command: "mypy"
+    plugins:
+      - docker-compose#v5.2.0:
+          run: app
+          config:
+            - docker-compose.yml
+    agents:
+      queue: build
+
+  - name: ":python: Running bandit :bandit:"
+    command: "bandit -c pyproject.toml -r ."
+    plugins:
+      - docker-compose#v5.2.0:
+          run: app
+          config:
+            - docker-compose.yml
+    agents:
+      queue: sp-art-tests
+
+  - wait
+
+  - name: "Handle versioning"
+    command:
+      - git config --global user.email "$BUILDKITE_BUILD_CREATOR_EMAIL"
+      - git config --global user.name "$BUILDKITE_BUILD_CREATOR"
+      - cz bump --annotated-tag --yes && { git push --follow-tags origin HEAD:$BUILDKITE_BRANCH; } || { echo "No version to bump."; true; }
+    if: |
+      build.message !~ /^bump\: version/ && build.branch == "main"
+    plugins:
+      - docker-compose#v5.2.0:
+          run: app
+          mount-ssh-agent: true
+          config:
+            - docker-compose.yml
+    agents:
+      queue: ag-sp-art
+
+  - name: ":docker: :python: Build backend Lambda Release"
+    command: make release
+    key: build-lambda
+    if: |
+      build.message =~ /^bump\: version/ && build.tag != null
+    plugins:
+      - cultureamp/aws-assume-role#v0.2.0:
+          role: arn:aws:iam::113287777478:role/buildkite/ecr-publish-role
+      - docker-compose#v5.2.0:
+          mount-ssh-agent: true
+          run: app
+          volumes:
+            - "./dist:/app/dist"
+    artifact_paths:
+      - dist/*.zip
+    agents:
+      queue: ag-sp-art
+
+  - label: ":hammer_and_wrench: Deploy to RAD"
+    command:
+      - VERSION=$(aws lambda update-function-code --function-name scalapay-{{cookiecutter.repo_slug}} --publish --s3-bucket art-scalapay-deployment-files --s3-key $BUILDKITE_PIPELINE_SLUG/$BUILDKITE_TAG/dist/application.zip | jq -r '.Version')
+      - aws lambda update-alias --function-name scalapay-{{cookiecutter.repo_slug}} --name {{cookiecutter.alias_name}} --function-version "$$VERSION"
+    if: |
+      build.message =~ /^bump\: version/ && build.tag != null 
+    env:
+      AWS_ASSUME_ROLE_ARN: arn:aws:iam::596502508366:role/buildkite/lambda-update-role
+    plugins:
+      - cultureamp/aws-assume-role
+    agents:
+      queue: sp-rad
+    depends_on: build-lambda
+
+  - block: ":octagonal_sign: Deploy to PRD?"
+    prompt: Deploy to the PRD environment?
+    if: |
+      build.message =~ /^bump\: version/ && build.tag != null
+    depends_on: build-lambda
+    key: deploy-prd
+
+  - label: ":hammer_and_wrench: Deploy to PRD"
+    command:
+      - VERSION=$(aws lambda update-function-code --function-name scalapay-{{cookiecutter.repo_slug}} --publish --s3-bucket art-scalapay-deployment-files --s3-key $BUILDKITE_PIPELINE_SLUG/$BUILDKITE_TAG/dist/application.zip | jq -r '.Version')
+      - aws lambda update-alias --function-name scalapay-{{cookiecutter.repo_slug}} --name {{cookiecutter.alias_name}} --function-version "$$VERSION"
+    if: |
+      build.message =~ /^bump\: version/ && build.tag != null 
+    env:
+      AWS_ASSUME_ROLE_ARN: arn:aws:iam::417963184926:role/buildkite/lambda-update-role
+    plugins:
+      - cultureamp/aws-assume-role
+    agents:
+      queue: sp-prd
+    depends_on: deploy-prd

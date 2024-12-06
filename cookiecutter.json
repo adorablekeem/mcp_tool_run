@@ -1,0 +1,11 @@
+{
+    "full_name": "FULL_NAME",
+    "email": "EMAIL",
+    "project_name": "Cookiecutter Python Lambda Function",
+    "repo_slug": "scalapay-{{ cookiecutter.project_name.lower().replace(' ', '-') }}",
+    "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+    "runtime": "python3.12",
+    "alias_name": "live",
+    "module_name": "app",
+    "handler": "handler"
+}
