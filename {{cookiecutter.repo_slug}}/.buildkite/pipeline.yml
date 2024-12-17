@@ -37,7 +37,7 @@ steps:
           config:
             - docker-compose.yml
     agents:
-      queue: build
+      queue: sp-art-tests
 
   - name: ":python: Running bandit :bandit:"
     command: "bandit -c pyproject.toml -r ."
