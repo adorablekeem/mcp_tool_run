@@ -1,4 +1,4 @@
-FROM public.ecr.aws/sam/build-{{ cookiecutter.runtime }} as builder
+FROM public.ecr.aws/sam/build-python3.12 as builder
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Set environment variables in a single layer to reduce image size and improve readability
@@ -10,7 +10,9 @@ ENV POETRY_HOME=/opt/poetry \
     POETRY_VIRTUALENVS_CREATE=1
 
 # Install Poetry in a virtual environment for dependency management
-RUN {{ cookiecutter.runtime }} -m pip install --no-cache-dir poetry==1.6.1
+RUN python3.12 -m pip install --no-cache-dir poetry==2.1.1 && \
+    mkdir -p -m 0600 ~/.ssh && \
+    ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
 
 # Set the working directory to /app. This is where the application code will reside.
 WORKDIR /app
@@ -19,13 +21,13 @@ WORKDIR /app
 COPY pyproject.toml poetry.lock ./
 
 # Install project dependencies via Poetry
-RUN poetry install --no-interaction --no-ansi --no-root
+RUN --mount=type=ssh poetry install --no-interaction --no-ansi --no-root
 
 # Copy the application code to the container
 COPY . .
 
 # Install the application in the container's virtual environment
-RUN poetry install --no-interaction --no-ansi --only-root
+RUN --mount=type=ssh poetry install --no-interaction --no-ansi --only-root
 
 ENTRYPOINT ["poetry", "run"]
 CMD ["python"]
