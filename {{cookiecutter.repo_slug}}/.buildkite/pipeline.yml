@@ -3,7 +3,10 @@ steps:
     command: pytest
     plugins:
       - docker-compose#v5.2.0:
+          build: app
           run: app
+          buildkit: true
+          ssh: true
           config:
             - docker-compose.yml
     agents:
@@ -13,7 +16,10 @@ steps:
     command: "flake8"
     plugins:
       - docker-compose#v5.2.0:
+          build: app
           run: app
+          buildkit: true
+          ssh: true
           config:
             - docker-compose.yml
     agents:
@@ -23,7 +29,10 @@ steps:
     command: "black . --check && isort . --check"
     plugins:
       - docker-compose#v5.2.0:
+          build: app
           run: app
+          buildkit: true
+          ssh: true
           config:
             - docker-compose.yml
     agents:
@@ -33,7 +42,10 @@ steps:
     command: "mypy"
     plugins:
       - docker-compose#v5.2.0:
+          build: app
           run: app
+          buildkit: true
+          ssh: true
           config:
             - docker-compose.yml
     agents:
@@ -43,7 +55,10 @@ steps:
     command: "bandit -c pyproject.toml -r ."
     plugins:
       - docker-compose#v5.2.0:
+          build: app
           run: app
+          buildkit: true
+          ssh: true
           config:
             - docker-compose.yml
     agents:
@@ -60,8 +75,11 @@ steps:
       build.message !~ /^bump\: version/ && build.branch == "main"
     plugins:
       - docker-compose#v5.2.0:
+          build: app
           run: app
           mount-ssh-agent: true
+          buildkit: true
+          ssh: true
           config:
             - docker-compose.yml
     agents:
@@ -76,8 +94,11 @@ steps:
       - cultureamp/aws-assume-role#v0.2.0:
           role: arn:aws:iam::113287777478:role/buildkite/ecr-publish-role
       - docker-compose#v5.2.0:
-          mount-ssh-agent: true
+          build: app
           run: app
+          mount-ssh-agent: true
+          buildkit: true
+          ssh: true
           volumes:
             - "./dist:/app/dist"
     artifact_paths:
@@ -87,8 +108,8 @@ steps:
 
   - label: ":hammer_and_wrench: Deploy to RAD"
     command:
-      - VERSION=$(aws lambda update-function-code --function-name scalapay-{{cookiecutter.repo_slug}} --publish --s3-bucket art-scalapay-deployment-files --s3-key $BUILDKITE_PIPELINE_SLUG/$BUILDKITE_TAG/dist/application.zip | jq -r '.Version')
-      - aws lambda update-alias --function-name scalapay-{{cookiecutter.repo_slug}} --name {{cookiecutter.alias_name}} --function-version "$$VERSION"
+      - VERSION=$(aws lambda update-function-code --function-name {{cookiecutter.repo_slug}} --publish --s3-bucket art-scalapay-deployment-files --s3-key $BUILDKITE_PIPELINE_SLUG/$BUILDKITE_TAG/dist/application.zip | jq -r '.Version')
+      - aws lambda update-alias --function-name {{cookiecutter.repo_slug}} --name {{cookiecutter.alias_name}} --function-version "$$VERSION"
     if: |
       build.message =~ /^bump\: version/ && build.tag != null 
     env:
@@ -108,8 +129,8 @@ steps:
 
   - label: ":hammer_and_wrench: Deploy to PRD"
     command:
-      - VERSION=$(aws lambda update-function-code --function-name scalapay-{{cookiecutter.repo_slug}} --publish --s3-bucket art-scalapay-deployment-files --s3-key $BUILDKITE_PIPELINE_SLUG/$BUILDKITE_TAG/dist/application.zip | jq -r '.Version')
-      - aws lambda update-alias --function-name scalapay-{{cookiecutter.repo_slug}} --name {{cookiecutter.alias_name}} --function-version "$$VERSION"
+      - VERSION=$(aws lambda update-function-code --function-name {{cookiecutter.repo_slug}} --publish --s3-bucket art-scalapay-deployment-files --s3-key $BUILDKITE_PIPELINE_SLUG/$BUILDKITE_TAG/dist/application.zip | jq -r '.Version')
+      - aws lambda update-alias --function-name {{cookiecutter.repo_slug}} --name {{cookiecutter.alias_name}} --function-version "$$VERSION"
     if: |
       build.message =~ /^bump\: version/ && build.tag != null 
     env:
