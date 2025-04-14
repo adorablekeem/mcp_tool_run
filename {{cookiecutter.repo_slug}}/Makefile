@@ -51,4 +51,4 @@ requirements.txt:
 
 release: requirements.txt ## Build Lambda Release Artifact
 	poetry run pip install . -r requirements.txt --target dist/$(PROJECT)
-	cd dist/$(PROJECT) && zip --exclude '*__pycache__*' '*/tests*' '*/testing*' '*.pyc' -r ../application.zip .
+	cd dist/$(PROJECT) && zip --exclude '*__pycache__*' '*.pyc' -r ../application.zip .
