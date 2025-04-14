@@ -1,4 +1,4 @@
-FROM public.ecr.aws/sam/build-python3.12 as builder
+FROM public.ecr.aws/sam/build-{{ cookiecutter.runtime }} as builder
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Set environment variables in a single layer to reduce image size and improve readability
@@ -10,7 +10,7 @@ ENV POETRY_HOME=/opt/poetry \
     POETRY_VIRTUALENVS_CREATE=1
 
 # Install Poetry in a virtual environment for dependency management
-RUN python3.12 -m pip install --no-cache-dir poetry==2.1.1 && \
+RUN {{ cookiecutter.runtime }} -m pip install --no-cache-dir poetry==2.1.1 && \
     mkdir -p -m 0600 ~/.ssh && \
     ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
 
