@@ -42,9 +42,11 @@ clean: ## Clean the project
 	rm -rf .venv
 	rm -rf .python-version
 	rm -rf dist/
-	rm -rf __pycache__
+	rm -rf __pycache__ **/__pycache__ **/**/__pycache__
 	rm -rf .pytest_cache
 	rm -rf .mypy_cache
+	rm -rf .coverage
+	rm -rf .poetry
 
 requirements.txt:
 	poetry export --without-hashes --format $@ --output $@
