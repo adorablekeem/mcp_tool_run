@@ -42,11 +42,15 @@ clean: ## Clean the project
 	rm -rf .venv
 	rm -rf .python-version
 	rm -rf dist/
-	rm -rf __pycache__
+	rm -rf __pycache__ **/__pycache__ **/**/__pycache__
 	rm -rf .pytest_cache
 	rm -rf .mypy_cache
+	rm -rf .coverage
+	rm -rf .poetry
 
-release: ## Build Lambda Release Artifact
-	poetry export --without-hashes --format requirements.txt --output requirements.txt
+requirements.txt:
+	poetry export --without-hashes --format $@ --output $@
+
+release: requirements.txt ## Build Lambda Release Artifact
 	poetry run pip install . -r requirements.txt --target dist/$(PROJECT)
-	cd dist/$(PROJECT) && zip --exclude '*__pycache__*' '*/tests*' '*/testing*' '*.pyc' -r ../application.zip .
+	cd dist/$(PROJECT) && zip --exclude '*__pycache__*' '*.pyc' -r ../application.zip .

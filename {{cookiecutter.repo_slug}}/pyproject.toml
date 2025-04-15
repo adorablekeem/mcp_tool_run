@@ -54,6 +54,7 @@ exclude = '''
   (
     \.eggs
     | .venv
+    | \.poetry
     | \.git
     | build
     | dist
@@ -66,6 +67,7 @@ exclude = '''
 line_length = 120
 profile = "black"
 src_paths = ["scalapay/{{cookiecutter.project_slug}}", "tests"]
+skip = [".poetry", ".venv", "build", "dist"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -97,5 +99,5 @@ disallow_any_unimported = "True"
 exclude = []
 
 [tool.bandit]
-exclude_dirs = ["tests", ".venv", "dist"]
+exclude_dirs = ["tests", ".venv", "dist", ".poetry"]
 targets = "scalapay"

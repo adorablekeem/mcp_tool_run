@@ -12,6 +12,8 @@ Ensure Docker is running if you're executing Docker-based commands.
 
 ## Setup
 
+You must be on poetry ~2.0, certain make targets will not work when using poetry < 2.0
+
 To set up the project, first clone the repository and then install the dependencies using Poetry:
 
 ```bash
