@@ -22,7 +22,6 @@ charset-normalizer==3.4.2
 click==8.2.1
 colorama==0.4.6
 commitizen==3.31.0
-cookiecutter_python_lambda_function==0.0.0
 coverage==7.9.2
 cryptography==45.0.5
 databot==0.19.2
