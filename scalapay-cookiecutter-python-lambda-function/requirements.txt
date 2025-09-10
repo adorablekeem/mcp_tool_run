@@ -24,7 +24,6 @@ colorama==0.4.6
 commitizen==3.31.0
 coverage==7.9.2
 cryptography==45.0.5
-databot==0.19.2
 dataclasses-json==0.6.7
 decli==0.6.3
 distro==1.9.0
