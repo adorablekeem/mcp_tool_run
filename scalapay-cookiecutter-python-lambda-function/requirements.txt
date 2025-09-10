@@ -89,7 +89,6 @@ multipart==1.2.1
 mypy==1.17.0
 mypy_extensions==1.1.0
 networkx==3.5
-numpy==1.26.4
 openapi-schema-validator==0.6.3
 openapi-spec-validator==0.7.2
 orjson==3.11.0
